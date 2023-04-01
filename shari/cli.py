@@ -2,16 +2,16 @@
 import os
 from m3ufu import M3uFu
 from x9k3 import argue
-from x9abr import X9Abr
+from .shari import Shari
 
 
 def cli():
     """
     cli provides one function call
-    for running x13  with command line args
-    Two lines of code gives you a full x9abr command line tool.
+    for running shari with command line args
+    Two lines of code gives you a full shari command line tool.
 
-     from x9abr import cli
+     from shari import cli
      cli()
 
     """
@@ -23,8 +23,8 @@ def cli():
         os.mkdir(args.output_dir)
     fu.decode()
    # [print(segment) for segment in fu.segments]
-    x9abr =X9Abr(fu.segments,args.output_dir,"sidecar.txt")
-    x9abr.go()
+    shar =Shari(fu.segments,args.output_dir,"sidecar.txt")
+    shar.go()
 
 if __name__ == '__main__':
     cli()
