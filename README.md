@@ -1,2 +1,2 @@
 # shari
-Scte35 Hls Adaptive bitrate Resegmenter and Injector
+## `S`cte35 `H`ls `A`daptive bitrate `R`esegmenter and `I`njector
