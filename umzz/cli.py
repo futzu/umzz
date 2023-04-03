@@ -2,7 +2,7 @@
 import os
 from m3ufu import M3uFu
 from x9k3 import argue
-from .shari import Shari
+from .umzz import UMZZ
 
 
 def cli():
@@ -23,8 +23,8 @@ def cli():
         os.mkdir(args.output_dir)
     fu.decode()
    # [print(segment) for segment in fu.segments]
-    shar =Shari(fu.segments,args.output_dir,"sidecar.txt")
-    shar.go()
+    um =UMZZ(fu.segments,args.output_dir,"sidecar.txt")
+    um.go()
 
 if __name__ == '__main__':
     cli()
