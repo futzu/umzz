@@ -31,7 +31,7 @@ def version():
 
 
 
-class  Shari:
+class  UMZZ:
     def __init__(self,m3u8_list,base,sidecar):
         self.master=None
         self.m3u8_list = m3u8_list
