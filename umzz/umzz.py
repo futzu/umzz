@@ -1,5 +1,5 @@
 """
-shari.py
+umzz.py
 """
 
 
@@ -7,7 +7,7 @@ from multiprocessing import Process,Pipe
 import os
 import time
 from new_reader import reader
-from x9mp import X9MP
+from .x9mp import X9MP
 
 
 MAJOR = "0"
@@ -90,8 +90,8 @@ class  UMZZ:
         with open(self.base+"/master.m3u8","w") as master:
             master.write('#EXTM3U\n#EXT-X-VERSION:6\n\n')
             for m3u8 in self.m3u8_list:
-          #      self.chk_sidecar()
-                master.write("\n".join(m3u8._lines[:-1]))
+                self.chk_sidecar()
+                master.write("\n".join(m3u8.lines[:-1]))
                 master.write('\n')
                 dn = self.base+"/"+str(dir_name)
                 if not os.path.isdir(dn):
