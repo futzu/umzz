@@ -3,7 +3,16 @@
 
 ### `Live HLS Adaptive Bitrate RealTime SCTE35 Cue Injection and Resegmentation`
 
-#### How does it work?
+ * umzz
+     * Handles __live streams in realtime__.
+     * supports __mpegts__ segments that use __h264, h265, and mpeg2__ video codecs.
+     * __Does not encode__. Use any encoder you like and pass umzz the master.m3u8.
+     * __Adds the SCTE-35 Cues__ to each variant, and __adjusts segments__ to start on iframes.
+     * Keeps variants in sync so __adaptive bitrate HLS works properly__.
+     * Outputs a __new master.m3u8__, new __variant m3u8s__, and __variant segments with SCTE-35__.
+
+
+#### How does umzz work?
 <details> <summary> umzz takes a master.m3u8 as input from any of these sources. </summary>
 
      * file
@@ -12,15 +21,6 @@
      * UDP Unicast
      * Multicast
 </details>  
-
-* umzz handles live streams in realtime.
-* umzz automatically shutdown at the broadcat ending.
-* umzz supports mpegts segments that use h264, h265, mpeg2 video codecs.
-* umzz does not encode. Use any encoder you like and pass umzz the master.m3u8.
-* umzz adds the SCTE-35 Cues to each variant, ands adjusts segments to start on iframes.
-* all SCTE-35 ad breaks start and end on iframes.
-* variants are kept in sync so adaptive bitrate HLS works properly.
-* umnzz outputs a new master.m3u8, new variant m3u8s, and variant segments with SCTE-35.
 
 <details> <summary>SCTE-35 cues are loaded from a Sidecar file.</summary>
 
