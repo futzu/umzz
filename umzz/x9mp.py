@@ -13,9 +13,9 @@ from iframes import IFramer
 from new_reader import reader
 from threefive import Cue
 from x9k3 import X9K3, SCTE35
-from chunky import Chunk
-from sliding import SlidingWindow
-from timer import Timer
+from .chunky import Chunk
+from .sliding import SlidingWindow
+from .timer import Timer
 
 
 class X9MP(X9K3):
@@ -213,8 +213,9 @@ class X9MP(X9K3):
                 self.scte35.mk_cue_state()
                 return
         if now >= self.started + self.args.time:
-            self.next_start = now
             self._write_segment()
+            #self.next_start = now
+
 
     def _chk_cue_time(self, pid):
         """
@@ -239,13 +240,13 @@ class X9MP(X9K3):
             self._chk_cue_time(pid)
 
     def _parse(self, pkt):
-        pkt_pid = self._parse_info(pkt)
-        now = self.pid2pts(pkt_pid)
+        pid = self._parse_info(pkt)
+        self._parse_pts( pkt, pid)
+        now = self.pid2pts(pid)
         if not self.started:
             self._start_next_start(pts=now)
-        self._load_sidecar(pkt_pid)
-        self._chk_sidecar_cues(pkt_pid)
-        self._chk_slice_point(now)
+        self._load_sidecar(pid)
+        self._chk_sidecar_cues(pid)
         if self._pusi_flag(pkt):
             self._chk_slice_point(now)
             if self.args.shulga:
@@ -253,10 +254,9 @@ class X9MP(X9K3):
             else:
                 i_pts = self.iframer.parse(pkt)
                 if i_pts:
-                    prgm = self.pid2prgm(pkt_pid)
+                    prgm = self.pid2prgm(pid)
                     self.maps.prgm_pts[prgm] = i_pts*90000.0
                     self._chk_slice_point(i_pts)
-
         self.active_segment.write(pkt)
 
     def decode(self, func=False):
