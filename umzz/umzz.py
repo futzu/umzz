@@ -90,6 +90,7 @@ class  UMZZ:
         with open(self.base+"/master.m3u8","w") as master:
             master.write('#EXTM3U\n#EXT-X-VERSION:6\n\n')
             for m3u8 in self.m3u8_list:
+                print(vars(m3u8))
                 self.chk_sidecar()
                 master.write("\n".join(m3u8.lines[:-1]))
                 master.write('\n')
