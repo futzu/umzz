@@ -1,3 +1,5 @@
+# Give me a minute, it's almost ready.
+
 # Ultra Mega zoom zoom
  _I had to rename the repo. I forgot my friend's wife is named shari, and it got awkward._
 
