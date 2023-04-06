@@ -1,6 +1,6 @@
 import os
 from m3ufu import M3uFu
-from x9k3 import argue
+from .argue import argue
 from .umzz import UMZZ
 
 
