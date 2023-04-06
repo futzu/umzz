@@ -99,6 +99,7 @@ class X9MP(X9K3):
                 self.scte35.cue_state = "IN"
         tag = self.scte35.mk_cue_tag()
         if tag:
+            print(tag)
             if self.scte35.cue_state in ["OUT", "IN"]:
                 chunk.add_tag("#EXT-X-DISCONTINUITY", None)
             kay = tag
