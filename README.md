@@ -1,9 +1,9 @@
-# Give me a minute, it's almost ready.
+# Live Adaptive Bitrate HLS SCTE35 Cue Injection 
+## Ultra Mega zoom zoom
 
-# Ultra Mega zoom zoom
- _I had to rename the repo. I forgot my friend's wife is named shari, and it got awkward._
+### Give me a minute, it's almost ready.
 
-### `Live HLS Adaptive Bitrate RealTime SCTE35 Cue Injection and Resegmentation`
+
 
  * umzz
      * Handles __live streams in realtime__.
