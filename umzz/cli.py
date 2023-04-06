@@ -7,10 +7,10 @@ from .umzz import UMZZ
 def cli():
     """
     cli provides one function call
-    for running shari with command line args
-    Two lines of code gives you a full shari command line tool.
+    for running umzz with command line args
+    Two lines of code gives you a full umzz command line tool.
 
-     from shari import cli
+     from umzz import cli
      cli()
 
     """
