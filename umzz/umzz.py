@@ -7,27 +7,7 @@ from multiprocessing import Process,Pipe
 import os
 import time
 from new_reader import reader
-from .x9mp import X9MP
-
-
-MAJOR = "0"
-MINOR = "0"
-MAINTAINENCE = "01"
-
-
-def version():
-    """
-    version prints x9abr's version as a string
-
-    Odd number versions are releases.
-    Even number versions are testing builds between releases.
-
-    Used to set version in setup.py
-    and as an easy way to check which
-    version you have installed.
-
-    """
-    return f"{MAJOR}.{MINOR}.{MAINTAINENCE}"
+from umzz.x9mp import X9MP
 
 
 
