@@ -36,14 +36,14 @@ class X9MP(X9K3):
         self.sidecar_pipe = None
         self.timer = Timer()
         self.m3u8 = "index.m3u8"
-        #self.args = argue()
+        # self.args = argue()
         self.apply_args()
         self.started = None
         self.next_start = None
         self.segnum = 0
         self.media_seq = 0
         self.discontinuity_sequence = 0
-        self.media_list=[]
+        self.media_list = []
 
     def _args_output_dir(self):
         if not os.path.isdir(self.args.output_dir):
@@ -65,7 +65,6 @@ class X9MP(X9K3):
         if isinstance(self._tsdata, str):
             self._tsdata = reader(self._tsdata)
 
-
     @staticmethod
     def _clean_line(line):
         if isinstance(line, bytes):
@@ -86,50 +85,26 @@ class X9MP(X9K3):
             head += sep
         return f"{head}{tail}"
 
-
-    def _add_cue_tag(self, chunk):
+    def _header(self):
         """
-        _add_cue_tag adds SCTE-35 tags,
-        handles break auto returns,
-        and adds discontinuity tags as needed.
+        header generates the m3u8 header lines
         """
-        if self.scte35.break_timer is not None:
-            if self.scte35.break_timer >= self.scte35.break_duration:
-                self.scte35.break_timer = None
-                self.scte35.cue_state = "IN"
-        tag = self.scte35.mk_cue_tag()
-        if tag:
-            print(tag)
-            if self.scte35.cue_state in ["OUT", "IN"]:
-                chunk.add_tag("#EXT-X-DISCONTINUITY", None)
-            kay = tag
-            vee = None
-            if ":" in tag:
-                kay, vee = tag.split(":", 1)
-            chunk.add_tag(kay, vee)
-            #print(kay, vee)
-
-    def _chk_pdt_flag(self, chunk):
-        if self.args.program_date_time:
-            iso8601 = f"{datetime.datetime.utcnow().isoformat()}Z"
-            chunk.add_tag("#Iframe", f"{self.started}")
-            chunk.add_tag("#EXT-X-PROGRAM-DATE-TIME", f"{iso8601}")
-
-    def _chk_live(self, seg_time):
-        if self.args.live:
-            self.window.pop_pane()
-            self.timer.throttle(seg_time* 0.95)
-            self._discontinuity_seq_plus_one()
-
-    def _mk_chunk_tags(self, chunk, seg_time):
-        self._add_cue_tag(chunk)
-        self._chk_pdt_flag(chunk)
-        chunk.add_tag("#EXTINF", f"{seg_time:.6f},")
-
-    def _print_segment_details(self, seg_name, seg_time):
-        one = f"{seg_name}:   start: {self.started:.6f}   "
-        two = f"end: {self.next_start:.6f}   duration: {seg_time:.6f}"
-        print(f"{one}{two}", file=sys.stderr)
+        m3u = "#EXTM3U"
+        m3u_version = "#EXT-X-VERSION:3"
+        target = f"#EXT-X-TARGETDURATION:{int(self.args.time+1)}"
+        seq = f"#EXT-X-MEDIA-SEQUENCE:{self.media_seq}"
+        dseq = f"#EXT-X-DISCONTINUITY-SEQUENCE:{self.discontinuity_sequence}"
+        bumper = ""
+        return "\n".join(
+            [
+                m3u,
+                m3u_version,
+                target,
+                seq,
+                dseq,
+                bumper,
+            ]
+        )
 
     def _write_segment(self):
         seg_file = f"seg{self.segnum}.ts"
@@ -174,9 +149,7 @@ class X9MP(X9K3):
                 if insert_pts >= self.pid2pts(pid):
                     if [insert_pts, cue] not in self.sidecar:
                         self.sidecar.append([insert_pts, cue])
-                        self.sidecar = deque(
-                            sorted(self.sidecar, key=itemgetter(0))
-                        )
+                        self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
 
     def _chk_sidecar_cues(self, pid):
         """
@@ -184,12 +157,12 @@ class X9MP(X9K3):
         for the next sidecar cue and inserts the cue if needed.
         """
         if self.sidecar:
-            if float(self.sidecar[0][0]) <= self.pid2pts(pid) :
+            if float(self.sidecar[0][0]) <= self.pid2pts(pid):
                 raw = self.sidecar.popleft()
                 self.scte35.cue_time = float(raw[0])
                 self.scte35.cue = Cue(raw[1])
                 self.scte35.cue.decode()
-                #self.scte35.cue.show()
+                # self.scte35.cue.show()
                 self._chk_cue_time(pid)
                 self._chk_slice_point(self.pid2pts(pid))
 
@@ -215,8 +188,7 @@ class X9MP(X9K3):
                 return
         if now >= self.started + self.args.time:
             self._write_segment()
-            #self.next_start = now
-
+            # self.next_start = now
 
     def _chk_cue_time(self, pid):
         """
@@ -230,7 +202,7 @@ class X9MP(X9K3):
                 self.scte35.cue_time = self.scte35.cue.command.pts_time + pts_adjust
             else:
                 self.scte35.cue_time = self.pid2pts(pid) + pts_adjust
-            print("Cue Time", self.scte35.cue_time )
+            print("Cue Time", self.scte35.cue_time)
 
     def _parse_scte35(self, pkt, pid):
         cue = super()._parse_scte35(pkt, pid)
@@ -242,7 +214,7 @@ class X9MP(X9K3):
 
     def _parse(self, pkt):
         pid = self._parse_info(pkt)
-        self._parse_pts( pkt, pid)
+        self._parse_pts(pkt, pid)
         now = self.pid2pts(pid)
         if not self.started:
             self._start_next_start(pts=now)
@@ -256,7 +228,7 @@ class X9MP(X9K3):
                 i_pts = self.iframer.parse(pkt)
                 if i_pts:
                     prgm = self.pid2prgm(pid)
-                    self.maps.prgm_pts[prgm] = i_pts*90000.0
+                    self.maps.prgm_pts[prgm] = i_pts * 90000.0
                     self._chk_slice_point(i_pts)
         self.active_segment.write(pkt)
 
@@ -299,8 +271,7 @@ class X9MP(X9K3):
         else:
             self.decode()
 
-
-    def decode_m3u8(self,manifest=None):
+    def decode_m3u8(self, manifest=None):
         """
         decode_m3u8 is called when the input file is a m3u8 playlist.
         """
@@ -308,8 +279,8 @@ class X9MP(X9K3):
         if len(based) > 1:
             base_uri = f"{based[0]}/"
         else:
-            base_uri=""
-        last_segnum=-1
+            base_uri = ""
+        last_segnum = -1
         reload = 25
         while True:
             with reader(manifest) as manifesto:
@@ -321,7 +292,7 @@ class X9MP(X9K3):
                     if not reload:
                         return False
                     if self.segnum == last_segnum:
-                        reload -=1
+                        reload -= 1
                     else:
                         reload = 25
                     last_segnum = self.segnum
