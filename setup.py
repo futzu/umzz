@@ -11,7 +11,7 @@ with open("umzz/version.py","r", encoding="utf-8") as latest:
 
 setuptools.setup(
     name="umzz",
-    version=version(),
+    version=version,
     author="Adrian",
     author_email="spam@iodisco.com",
     description="SCTE-35 Injection for Adaptive Bitrate HLS",
