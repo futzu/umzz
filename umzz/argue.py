@@ -7,9 +7,7 @@ import argparse
 import sys
 
 
-
 def argue():
-
     """
     argue parse command line args
     """
