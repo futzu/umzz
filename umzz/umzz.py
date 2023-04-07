@@ -7,7 +7,7 @@ from multiprocessing import Process,Pipe
 import os
 import time
 from new_reader import reader
-from umzz.x9mp import X9MP
+from .x9mp import X9MP
 
 
 
@@ -62,8 +62,9 @@ class  UMZZ:
         for v in self.variants:
             if v.is_alive():
                 return True
+            self.variants.pop(self.variants.index(v))
             print(v._name," is down")
-        return False
+            return False
 
     def go(self):
         dir_name = 0
