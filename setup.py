@@ -14,7 +14,7 @@ setuptools.setup(
     version=version(),
     author="Adrian",
     author_email="spam@iodisco.com",
-    description="SCTE-35  Injection for Adaptive Bitrate HLS",
+    description="SCTE-35 Injection for Adaptive Bitrate HLS",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/futzu/umzz",
