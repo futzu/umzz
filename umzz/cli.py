@@ -11,9 +11,9 @@ def cli():
     """
     cli provides one function call
     for running shari with command line args
-    Two lines of code gives you a full shari command line tool.
+    Two lines of code gives you a full umzz command line tool.
 
-     from shari import cli
+     from umzz import cli
      cli()
 
     """
