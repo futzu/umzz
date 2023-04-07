@@ -55,13 +55,11 @@ class X9MP(X9K3):
         _apply_args  uses command line args
         to set X9K3MP instance vars
         """
-        self._args_version()
         self._args_input()
         self._args_hls_tag()
         self._args_output_dir()
         self._args_flags()
         self._args_window_size()
-
         if isinstance(self._tsdata, str):
             self._tsdata = reader(self._tsdata)
 
@@ -71,40 +69,49 @@ class X9MP(X9K3):
             line = line.decode(errors="ignore")
         line = line.replace("\n", "").replace("\r", "")
         return line
+    def _add_cue_tag(self, chunk):
+        """
+        _add_cue_tag adds SCTE-35 tags,
+        handles break auto returns,
+        and adds discontinuity tags as needed.
+        """
+        if self.scte35.break_timer is not None:
+            if self.scte35.break_timer >= self.scte35.break_duration:
+                self.scte35.break_timer = None
+                self.scte35.cue_state = "IN"
+        tag = self.scte35.mk_cue_tag()
+        if tag:
+            print(tag)
+            if self.scte35.cue_state in ["OUT", "IN"]:
+                chunk.add_tag("#EXT-X-DISCONTINUITY", None)
+            kay = tag
+            vee = None
+            if ":" in tag:
+                kay, vee = tag.split(":", 1)
+            chunk.add_tag(kay, vee)
+            # print(kay, vee)
 
-    @staticmethod
-    def mk_uri(head, tail):
-        """
-        mk_uri is used to create local filepaths
-        and resolve backslash or forwardslash seperators
-        """
-        sep = "/"
-        if len(head.split("\\")) > len(head.split("/")):
-            sep = "\\"
-        if not head.endswith(sep):
-            head += sep
-        return f"{head}{tail}"
+    def _chk_pdt_flag(self, chunk):
+        if self.args.program_date_time:
+            iso8601 = f"{datetime.datetime.utcnow().isoformat()}Z"
+            chunk.add_tag("#Iframe", f"{self.started}")
+            chunk.add_tag("#EXT-X-PROGRAM-DATE-TIME", f"{iso8601}")
 
-    def _header(self):
-        """
-        header generates the m3u8 header lines
-        """
-        m3u = "#EXTM3U"
-        m3u_version = "#EXT-X-VERSION:3"
-        target = f"#EXT-X-TARGETDURATION:{int(self.args.time+1)}"
-        seq = f"#EXT-X-MEDIA-SEQUENCE:{self.media_seq}"
-        dseq = f"#EXT-X-DISCONTINUITY-SEQUENCE:{self.discontinuity_sequence}"
-        bumper = ""
-        return "\n".join(
-            [
-                m3u,
-                m3u_version,
-                target,
-                seq,
-                dseq,
-                bumper,
-            ]
-        )
+    def _chk_live(self, seg_time):
+        if self.args.live:
+            self.window.pop_pane()
+            self.timer.throttle(seg_time * 0.95)
+            self._discontinuity_seq_plus_one()
+
+    def _mk_chunk_tags(self, chunk, seg_time):
+        self._add_cue_tag(chunk)
+        self._chk_pdt_flag(chunk)
+        chunk.add_tag("#EXTINF", f"{seg_time:.6f},")
+
+    def _print_segment_details(self, seg_name, seg_time):
+        one = f"{seg_name}:   start: {self.started:.6f}   "
+        two = f"end: {self.next_start:.6f}   duration: {seg_time:.6f}"
+        print(f"{one}{two}", file=sys.stderr)
 
     def _write_segment(self):
         seg_file = f"seg{self.segnum}.ts"
@@ -162,7 +169,6 @@ class X9MP(X9K3):
                 self.scte35.cue_time = float(raw[0])
                 self.scte35.cue = Cue(raw[1])
                 self.scte35.cue.decode()
-                # self.scte35.cue.show()
                 self._chk_cue_time(pid)
                 self._chk_slice_point(self.pid2pts(pid))
 
@@ -188,7 +194,6 @@ class X9MP(X9K3):
                 return
         if now >= self.started + self.args.time:
             self._write_segment()
-            # self.next_start = now
 
     def _chk_cue_time(self, pid):
         """
@@ -211,6 +216,7 @@ class X9MP(X9K3):
             cue.show()
             self.scte35.cue = cue
             self._chk_cue_time(pid)
+        return cue
 
     def _parse(self, pkt):
         pid = self._parse_info(pkt)
