@@ -17,10 +17,87 @@
 
 #### How does umzz work?
 
+* if you have a master.m3u8 like 
+
+```js
+a@debian:~/umzz$ cat ~/stuff/master.m3u8
+#EXTM3U
+#EXT-X-VERSION:6
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=864x486,CODECS="avc1.42c01f,mp4a.40.2"
+stream_0.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=1280x720,CODECS="avc1.42c01f,mp4a.40.2"
+stream_1.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=640x360,CODECS="avc1.42c01e,mp4a.40.2"
+stream_2.m3u8
+```
+
+* and you want to add a splice insert  at PTS 13140.123456, create a sidecar file and add the following line.
+```js 
+a@debian:~/umzz$ cat sidecar.txt
+13140.123456,/DAhAAAAAAAAAP/wEAUAAAAJf78A/gASZvAACQAAAACokv3z
+```
+* then run this. 
+```js
+
+a@debian:~/umzz$ umzz -i ~/stuff/master.m3u8 -s sidecar.txt -o fu
+```
+* in the base dir fu is the new HLS with SCTE-35 
+```js
+a@debian:~/umzz$ ls -ald fu/* fu/*/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/0
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/0/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/1
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/1/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/2
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/2/index.m3u8
+-rw-r--r-- 1 a a  320 Apr  9 06:07 fu/master.m3u8
+```
+### Details
+
 ```js
 a@debian:~/$ umzz -h
 usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
                 [-T HLS_TAG] [-w WINDOW_SIZE] [-d] [-l] [-r] [-S] [-v] [-p]
+                
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Input source, like "/home/a/vid.ts" or
+                        "udp://@235.35.3.5:3535" or
+                        "https://futzu.com/xaa.ts"
+                        
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        Directory for segments and index.m3u8 ( created if it
+                        does not exist )
+                        
+  -s SIDECAR_FILE, --sidecar_file SIDECAR_FILE
+                        SCTE35 Sidecar file. each line contains PTS, Cue
+                        (default sidecar.txt)
+                        
+  -t TIME, --time TIME  Segment time in seconds ( default is 2)
+  
+  -T HLS_TAG, --hls_tag HLS_TAG
+                        x_scte35, x_cue, x_daterange, or x_splicepoint
+                        (default x_cue)
+                        
+  -w WINDOW_SIZE, --window_size WINDOW_SIZE
+                        sliding window size(default:5)
+                        
+  -d, --delete          delete segments
+  
+  -l, --live            Flag for a fake live playback ( enables sliding window m3u8 )
+  
+  -r, --replay          Flag for replay (looping) ( enables --delete )
+  
+  -S, --shulga          Flag to enable Shulga iframe detection mode (mpeg2)
+  
+  -v, --version         Show version
+  
+  -p, --program_date_time
+                        Flag to add Program Date Time tags to index.m3u8
+
 ```
 
 ####  `[ -i INPUT ]`
@@ -47,11 +124,11 @@ usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
 
 #### `[ -o OUTPUT_DIR ]`
 
-* Base directory for new HLS. default is the current directory. 
+* Base directory for new HLS.
 
 #### `[ -s SIDECAR_FILE ]`
 
-<details> <summary>SCTE-35 cues are loaded from a Sidecar file.</summary>
+<details> <summary>SCTE-35 cues are loaded from a Sidecar file. </summary>
 
 Sidecar Cues will be handled the same as SCTE35 cues from a video stream.   
 line format for text file  `insert_pts, cue`
@@ -117,6 +194,6 @@ cue can be base64,hex, int, or bytes
 </details>
 
 #### `[-t TIME]`
-* new target segment duration. Default is 2 seconds.
+* New target segment duration. Default is 2 seconds.
 
 
