@@ -71,7 +71,7 @@ optional arguments:
                         "https://futzu.com/xaa.ts"
    ``` 
    
-   <details> <summary> umzz takes a master.m3u8 as input from any of these sources. </summary>
+   <details> <summary> umzz takes a master.m3u8 as input, More on inputs. </summary>
 
  * Sources
     * file
@@ -104,7 +104,7 @@ optional arguments:
 ```
 
 
-<details> <summary>SCTE-35 cues are loaded from a Sidecar file. </summary>
+<details> <summary>SCTE-35 cues are load from a sidecar file. More on sidecar files. </summary>
 
 Sidecar Cues will be handled the same as SCTE35 cues from a video stream.   
 line format for text file  `insert_pts, cue`
