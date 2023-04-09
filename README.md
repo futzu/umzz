@@ -63,46 +63,15 @@ usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
                 
 optional arguments:
   -h, --help            show this help message and exit
+  ```
+  ```js
   -i INPUT, --input INPUT
                         Input source, like "/home/a/vid.ts" or
                         "udp://@235.35.3.5:3535" or
                         "https://futzu.com/xaa.ts"
-                        
-  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
-                        Directory for segments and index.m3u8 ( created if it
-                        does not exist )
-                        
-  -s SIDECAR_FILE, --sidecar_file SIDECAR_FILE
-                        SCTE35 Sidecar file. each line contains PTS, Cue
-                        (default sidecar.txt)
-                        
-  -t TIME, --time TIME  Segment time in seconds ( default is 2)
-  
-  -T HLS_TAG, --hls_tag HLS_TAG
-                        x_scte35, x_cue, x_daterange, or x_splicepoint
-                        (default x_cue)
-                        
-  -w WINDOW_SIZE, --window_size WINDOW_SIZE
-                        sliding window size(default:5)
-                        
-  -d, --delete          delete segments
-  
-  -l, --live            Flag for a fake live playback ( enables sliding window m3u8 )
-  
-  -r, --replay          Flag for replay (looping) ( enables --delete )
-  
-  -S, --shulga          Flag to enable Shulga iframe detection mode (mpeg2)
-  
-  -v, --version         Show version
-  
-  -p, --program_date_time
-                        Flag to add Program Date Time tags to index.m3u8
-
-```
-
-####  `[ -i INPUT ]`
-
-<details> <summary> umzz takes a master.m3u8 as input from any of these sources. </summary>
+   ``` 
+   
+   <details> <summary> umzz takes a master.m3u8 as input from any of these sources. </summary>
 
  * Sources
     * file
@@ -122,11 +91,18 @@ optional arguments:
     
 </details>  
 
-#### `[ -o OUTPUT_DIR ]`
+```js
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        Directory for segments and index.m3u8 ( created if it
+                        does not exist )
+```
 
-* Base directory for new HLS.
+```js
+  -s SIDECAR_FILE, --sidecar_file SIDECAR_FILE
+                        SCTE35 Sidecar file. each line contains PTS, Cue
+                        (default sidecar.txt)
+```
 
-#### `[ -s SIDECAR_FILE ]`
 
 <details> <summary>SCTE-35 cues are loaded from a Sidecar file. </summary>
 
@@ -191,9 +167,31 @@ cue can be base64,hex, int, or bytes
 ./seg9.ts:	start:119.3	        end:121.3	duration:2.3
 
 ``` 
+    
 </details>
 
-#### `[-t TIME]`
-* New target segment duration. Default is 2 seconds.
+```js
+  -t TIME, --time TIME  Segment time in seconds ( default is 2)
+  
+  -T HLS_TAG, --hls_tag HLS_TAG
+                        x_scte35, x_cue, x_daterange, or x_splicepoint
+                        (default x_cue)
+                        
+  -w WINDOW_SIZE, --window_size WINDOW_SIZE
+                        sliding window size(default:5)
+                        
+  -d, --delete          delete segments
+  
+  -l, --live            Flag for a fake live playback ( enables sliding window m3u8 )
+  
+  -r, --replay          Flag for replay (looping) ( enables --delete )
+  
+  -S, --shulga          Flag to enable Shulga iframe detection mode (mpeg2)
+  
+  -v, --version         Show version
+  
+  -p, --program_date_time
+                        Flag to add Program Date Time tags to index.m3u8
 
+```
 
