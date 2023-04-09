@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     readme = fh.read()
 
 with open("umzz/version.py","r", encoding="utf-8") as latest:
-    version = latest.read().split("'")[1]
+    version = latest.read().split('"')[1]
 
 
 setuptools.setup(
