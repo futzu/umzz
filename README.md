@@ -66,12 +66,12 @@ optional arguments:
   ```
   ```js
   -i INPUT, --input INPUT
-                        Input source, like "/home/a/vid.ts" or
+                        Input source, like "/home/a/master.m3u8" or
                         "udp://@235.35.3.5:3535" or
-                        "https://futzu.com/xaa.ts"
+                        "https://futzu.com/xaa.master.m3u8"
    ``` 
    
-   <details> <summary> umzz takes a master.m3u8 as input, More on inputs. </summary>
+   <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
  * Sources
     * file
@@ -104,7 +104,7 @@ optional arguments:
 ```
 
 
-<details> <summary>SCTE-35 cues are load from a sidecar file. More on sidecar files. </summary>
+<details> <summary>SCTE-35 cues are load from a sidecar file. <b>More on sidecar files.<b> </summary>
 
 Sidecar Cues will be handled the same as SCTE35 cues from a video stream.   
 line format for text file  `insert_pts, cue`
@@ -172,14 +172,17 @@ cue can be base64,hex, int, or bytes
 
 ```js
   -t TIME, --time TIME  Segment time in seconds ( default is 2)
-  
+```
+```js
   -T HLS_TAG, --hls_tag HLS_TAG
                         x_scte35, x_cue, x_daterange, or x_splicepoint
                         (default x_cue)
-                        
+```
+```js
   -w WINDOW_SIZE, --window_size WINDOW_SIZE
                         sliding window size(default:5)
-                        
+```
+```js                
   -d, --delete          delete segments
   
   -l, --live            Flag for a fake live playback ( enables sliding window m3u8 )
