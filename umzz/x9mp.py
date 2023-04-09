@@ -16,6 +16,7 @@ from x9k3 import X9K3, SCTE35
 from .chunky import Chunk
 from .sliding import SlidingWindow
 from .timer import Timer
+from .version import version
 
 
 class X9MP(X9K3):
@@ -30,7 +31,7 @@ class X9MP(X9K3):
         self.in_stream = tsdata
         self.active_segment = io.BytesIO()
         self.iframer = IFramer(shush=True)
-        self.window = SlidingWindow(5)
+        self.window = SlidingWindow(500)
         self.scte35 = SCTE35()
         self.sidecar = deque()
         self.sidecar_pipe = None
@@ -92,6 +93,28 @@ class X9MP(X9K3):
             chunk.add_tag(kay, vee)
             # print(kay, vee)
 
+    def _header(self):
+        """
+        header generates the m3u8 header lines
+        """
+        m3u = "#EXTM3U"
+        m3u_version = "#EXT-X-VERSION:3"
+        target = f"#EXT-X-TARGETDURATION:{int(self.args.time+1)}"
+        seq = f"#EXT-X-MEDIA-SEQUENCE:{self.media_seq}"
+        dseq = f"#EXT-X-DISCONTINUITY-SEQUENCE:{self.discontinuity_sequence}"
+        umzzv = f"#EXT-X-UMZZ-VERSION:{version}"
+        bumper = ""
+        return "\n".join(
+            [
+                m3u,
+                m3u_version,
+                target,
+                seq,
+                dseq,
+                umzzv,
+                bumper,
+            ]
+        )
     def _chk_pdt_flag(self, chunk):
         if self.args.program_date_time:
             iso8601 = f"{datetime.datetime.utcnow().isoformat()}Z"
