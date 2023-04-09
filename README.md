@@ -16,14 +16,40 @@
 
 
 #### How does umzz work?
+
+```js
+a@debian:~/$ umzz -h
+usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
+                [-T HLS_TAG] [-w WINDOW_SIZE] [-d] [-l] [-r] [-S] [-v] [-p]
+```
+
+####  `[ -i INPUT ]`
+
 <details> <summary> umzz takes a master.m3u8 as input from any of these sources. </summary>
 
-     * file
-     * Stdin
-     * HTTP(s)
-     * UDP Unicast
-     * Multicast
+ * Sources
+    * file
+    * Stdin
+    * HTTP(s)
+    * UDP Unicast
+    * Multicast
+* Supported Video 
+    * Containers:
+        * MPEGTS
+    * Codecs:
+        * h264
+        * h265
+        * mpeg2
+    * HLS:
+        * Audio and Video in the same segment. 
+    
 </details>  
+
+#### `[ -o OUTPUT_DIR ]`
+
+* Base directory for new HLS. default is the current directory. 
+
+#### `[ -s SIDECAR_FILE ]`
 
 <details> <summary>SCTE-35 cues are loaded from a Sidecar file.</summary>
 
@@ -89,5 +115,8 @@ cue can be base64,hex, int, or bytes
 
 ``` 
 </details>
+
+#### `[-t TIME]`
+* new target segment duration. Default is 2 seconds.
 
 
