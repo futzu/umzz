@@ -2,8 +2,6 @@
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
 
-##### Give me a minute, it's almost ready.
-
 
 
  * umzz
@@ -15,46 +13,22 @@
      * Outputs a __new master.m3u8__, new __variant m3u8s__, and __variant segments with SCTE-35__.
 
 
-#### How does umzz work?
+## How does umzz work?
 
-* if you have a master.m3u8 like 
-
-```js
-a@debian:~/umzz$ cat ~/stuff/master.m3u8
-#EXTM3U
-#EXT-X-VERSION:6
-#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=864x486,CODECS="avc1.42c01f,mp4a.40.2"
-stream_0.m3u8
-
-#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=1280x720,CODECS="avc1.42c01f,mp4a.40.2"
-stream_1.m3u8
-
-#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=640x360,CODECS="avc1.42c01e,mp4a.40.2"
-stream_2.m3u8
+<details><summary><b>Install</b></summary>
+    
+```lua
+    python3 -mpip install umzz
 ```
+ * and / or 
 
-* and you want to add a splice insert  at PTS 13140.123456, create a sidecar file and add the following line.
-```js 
-a@debian:~/umzz$ cat sidecar.txt
-13140.123456,/DAhAAAAAAAAAP/wEAUAAAAJf78A/gASZvAACQAAAACokv3z
+```lua
+    pypy3 -mpip install umzz
 ```
-* then run this. 
-```js
-
-a@debian:~/umzz$ umzz -i ~/stuff/master.m3u8 -s sidecar.txt -o fu
-```
-* in the base dir fu is the new HLS with SCTE-35 
-```js
-a@debian:~/umzz$ ls -ald fu/* fu/*/index.m3u8
-drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/0
--rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/0/index.m3u8
-drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/1
--rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/1/index.m3u8
-drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/2
--rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/2/index.m3u8
--rw-r--r-- 1 a a  320 Apr  9 06:07 fu/master.m3u8
-```
-### Details
+    
+</details>    
+    
+<details><summary><b>Details</b></summary>
 
 ```js
 a@debian:~/$ umzz -h
@@ -198,3 +172,48 @@ cue can be base64,hex, int, or bytes
 
 ```
 
+</details>
+    
+    
+<details><summary> Quick Example </summary>
+    
+ 
+* if you have a master.m3u8 like 
+
+```js
+a@debian:~/umzz$ cat ~/stuff/master.m3u8
+#EXTM3U
+#EXT-X-VERSION:6
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=864x486,CODECS="avc1.42c01f,mp4a.40.2"
+stream_0.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=1280x720,CODECS="avc1.42c01f,mp4a.40.2"
+stream_1.m3u8
+
+#EXT-X-STREAM-INF:BANDWIDTH=83222,RESOLUTION=640x360,CODECS="avc1.42c01e,mp4a.40.2"
+stream_2.m3u8
+```
+
+* and you want to add a splice insert  at PTS 13140.123456, create a sidecar file and add the following line.
+```js 
+a@debian:~/umzz$ cat sidecar.txt
+13140.123456,/DAhAAAAAAAAAP/wEAUAAAAJf78A/gASZvAACQAAAACokv3z
+```
+* then run this. 
+```js
+
+a@debian:~/umzz$ umzz -i ~/stuff/master.m3u8 -s sidecar.txt -o fu
+```
+* in the base dir fu is the new HLS with SCTE-35 
+```js
+a@debian:~/umzz$ ls -ald fu/* fu/*/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/0
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/0/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/1
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/1/index.m3u8
+drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/2
+-rw-r--r-- 1 a a 3171 Apr  9 06:07 fu/2/index.m3u8
+-rw-r--r-- 1 a a  320 Apr  9 06:07 fu/master.m3u8
+```
+    
+</details>    
