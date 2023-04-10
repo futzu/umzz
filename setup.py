@@ -22,7 +22,7 @@ setuptools.setup(
         "new_reader >= 0.1.7",
         "iframes >= 0.0.5",
         "x9k3 >= 0.1.89",
-        "m3ufu >=0.0.65",
+        "m3ufu >=0.0.67",
         "threefive >= 2.3.81",
     ],
     scripts=["bin/umzz"],
