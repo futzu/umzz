@@ -31,7 +31,7 @@ class X9MP(X9K3):
         self.in_stream = tsdata
         self.active_segment = io.BytesIO()
         self.iframer = IFramer(shush=True)
-        self.window = SlidingWindow(500)
+        self.window = SlidingWindow(5)
         self.scte35 = SCTE35()
         self.sidecar = deque()
         self.sidecar_pipe = None
