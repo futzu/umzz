@@ -18,6 +18,7 @@ class UMZZ:
         self.pipes = []
         self.variants = []
         self.base = base
+        print("BASE",base)
 
     def add_variant(self, m3u8, dir_name):
         """
@@ -94,8 +95,8 @@ class UMZZ:
                 #   print(vars(m3u8))
                 self.chk_sidecar()
                 if "#EXT-X-STREAM-INF" in m3u8.tags:
-                    for k, v in m3u8.tags.items():
-                        print(f"{k}:{v}")
+                  #  for k, v in m3u8.tags.items():
+                    #    print(f"{k}:{v}")
                     master.write("\n".join(m3u8.lines[:-1]))
                     master.write("\n")
                     dn = self.base + "/" + str(dir_name)
@@ -124,5 +125,6 @@ class UMZZ:
         # x9mp.args.live = True
         try:
             x9mp.decode_m3u8(manifest=manifest.media)
-        except:
+        except Exception as err:
+            print(err)
             print(manifest.media, "...........Failed")
