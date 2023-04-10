@@ -12,6 +12,7 @@ class Chunk:
     def __init__(self, name, num):
         self.tags = {}
         self.name = name
+        self.file = self.name.rsplit('/',1)[1]
         self.num = num
 
     def get(self):
@@ -24,7 +25,7 @@ class Chunk:
                 this.append(kay)
             else:
                 this.append(f"{kay}:{vee}")
-        this.append(self.name)
+        this.append(self.file)
         this.append("")
         this = "\n".join(this)
         return this
