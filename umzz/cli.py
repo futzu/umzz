@@ -19,7 +19,7 @@ def cli():
     """
     args = argue()
     if args.version:
-        print(f'umzz {version}')
+        print(f"umzz {version}")
         sys.exit()
 
     print(args)
@@ -30,7 +30,7 @@ def cli():
         os.mkdir(args.output_dir)
     try:
         fu.decode()
-        um = UMZZ(fu.segments, args.output_dir,args.sidecar_file)
+        um = UMZZ(fu.segments, args.output_dir, args.sidecar_file)
         um.go()
     finally:
         return
