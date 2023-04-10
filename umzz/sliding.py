@@ -22,6 +22,7 @@ class SlidingWindow:
         """
         if len(self.panes) >= self.size:
             if self.delete:
+                print(vars(self.panes[0]))
                 popped = self.panes[0].name
                 print(f"deleting {popped}")
                 os.unlink(popped)
