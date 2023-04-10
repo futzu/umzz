@@ -31,7 +31,7 @@ class X9MP(X9K3):
         self.in_stream = tsdata
         self.active_segment = io.BytesIO()
         self.iframer = IFramer(shush=True)
-        self.window = SlidingWindow(5)
+        self.window = SlidingWindow(500)
         self.scte35 = SCTE35()
         self.sidecar = deque()
         self.sidecar_pipe = None
@@ -305,6 +305,7 @@ class X9MP(X9K3):
         """
         decode_m3u8 is called when the input file is a m3u8 playlist.
         """
+      #  if not  manifest.startswith('http') or not manifest.startswith('/'): 
         based = manifest.rsplit("/", 1)
         if len(based) > 1:
             base_uri = f"{based[0]}/"
@@ -328,7 +329,10 @@ class X9MP(X9K3):
                     last_segnum = self.segnum
                     if not line.startswith("#"):
                         if len(line):
-                            media = base_uri + line
+                            if base_uri not in line:
+                                media = base_uri + line
+                            else:
+                                media = line
                             if media not in self.media_list:
                                 self.media_list.append(media)
                                 self.media_list = self.media_list[-200:]
