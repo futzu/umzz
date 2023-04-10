@@ -143,7 +143,7 @@ class X9MP(X9K3):
         seg_time = round(self.next_start - self.started, 6)
         with open(seg_name, "wb") as seg:
             seg.write(self.active_segment.getbuffer())
-        chunk = Chunk(seg_file, self.segnum)
+        chunk = Chunk(seg_name, self.segnum)
         self._mk_chunk_tags(chunk, seg_time)
         self.window.push_pane(chunk)
         self._write_m3u8()
