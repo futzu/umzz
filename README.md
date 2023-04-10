@@ -47,6 +47,10 @@ optional arguments:
    
    <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
+### You really want to run this on the same box with your encoder, 
+### or else you're trying to download all the variants at the same time. 
+### That's a lot of bandwidth son.
+
  * Sources
     * file
     * Stdin
