@@ -70,6 +70,14 @@ def argue():
     )
 
     parser.add_argument(
+        "-l",
+        "--live",
+        action="store_const",
+        default=False,
+        const=True,
+        help="Flag for a live event ( enables sliding window m3u8 )",
+    )
+    parser.add_argument(
         "-r",
         "--replay",
         action="store_const",
