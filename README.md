@@ -47,16 +47,28 @@ optional arguments:
    
    <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
-### You really want to run this on the same box with your encoder, 
-### or else you're trying to download all the variants at the same time. 
-### That's a lot of bandwidth son.
+### DO NOT USE a master.m3u8 over a network, it will have problems
+### because you're trying to download and parse all the variants at the same time. 
 
- * Sources
-    * file
-    * Stdin
-    * HTTP(s)
-    * UDP Unicast
-    * Multicast
+### Instead use ffmpeg to pull ONE rendition off the network and use it to  create a new master,
+### This is the faster way to do it
+
+* something like 
+```
+ffmpeg -re -i https://example.com/rendition4.m3u8  \
+-b:v:0 1000k -b:v:1 256k -b:a:0 64k -b:a:1 32k \
+-map 0:v -map 0:a -map 0:v -map 0:a \
+-f hls -var_stream_map "v:0,a:0 v:1,a:1" \
+-master_pl_name master.m3u8 \
+fu3/mo_%v.m3u8
+```
+* then use fu3/master.m3u8 for umzz
+  ```lua
+  umzz -i fu3/master.m3u8 -s my_sidecar.txt
+  ```
+* and you'll be good to go.
+
+
 * Supported Video 
     * Containers:
         * MPEGTS
