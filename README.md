@@ -27,30 +27,13 @@
 ```
     
 </details>    
-    
-<details><summary><b>Details</b></summary>
 
-```js
-a@debian:~/$ umzz -h
-usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
-                [-T HLS_TAG] [-w WINDOW_SIZE] [-d] [-l] [-r] [-S] [-v] [-p]
-                
-optional arguments:
-  -h, --help            show this help message and exit
-  ```
-  ```js
-  -i INPUT, --input INPUT
-                        Input source, like "/home/a/master.m3u8" or
-                        "udp://@235.35.3.5:3535" or
-                        "https://futzu.com/xaa.master.m3u8"
-   ``` 
-   
    <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
-### DO NOT USE a master.m3u8 over a network, it will have problems
-### because you're trying to download and parse all the variants at the same time. 
+### DO NOT USE a master.m3u8 over a network, it will have problems because you're trying to download and parse all the variants at the same time. 
 
-### Instead use ffmpeg to pull ONE rendition off the network and use it to  create a new master,
+### Instead use ffmpeg to pull ONE rendition off the network and use it to  create a new local master.m3u8.
+
 ### This is the faster way to do it
 
 * something like 
@@ -80,6 +63,25 @@ fu3/mo_%v.m3u8
         * Audio and Video in the same segment. 
     
 </details>  
+
+    
+<details><summary><b>Details</b></summary>
+
+```js
+a@debian:~/$ umzz -h
+usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
+                [-T HLS_TAG] [-w WINDOW_SIZE] [-d] [-l] [-r] [-S] [-v] [-p]
+                
+optional arguments:
+  -h, --help            show this help message and exit
+  ```
+  ```js
+  -i INPUT, --input INPUT
+                        Input source, like "/home/a/master.m3u8" or
+                        "udp://@235.35.3.5:3535" or
+                        "https://futzu.com/xaa.master.m3u8"
+   ``` 
+   
 
 ```js
   -o OUTPUT_DIR, --output_dir OUTPUT_DIR
