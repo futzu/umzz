@@ -38,7 +38,9 @@
 
 * something like 
 ```
-ffmpeg -re -i https://example.com/rendition4.m3u8  \
+ffmpeg  -re -copyts  -i https://example.com/rendition4.m3u8  \
+ -g 30 -r 30 -flags +cgop \
+-c:v libx264 -c:a aac \
 -b:v:0 1000k -b:v:1 256k -b:a:0 64k -b:a:1 32k \
 -map 0:v -map 0:a -map 0:v -map 0:a \
 -f hls -var_stream_map "v:0,a:0 v:1,a:1" \
