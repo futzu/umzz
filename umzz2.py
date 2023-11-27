@@ -1,18 +1,17 @@
 """
-umzz.py
+umzz2.py
 """
-
-
-from multiprocessing import Process, Pipe
-import time
-import os
-from pathlib import Path
-import sys
-from m3ufu import M3uFu
 import datetime
 import io
+import os
+import sys
+import time
 from collections import deque
+from multiprocessing import Process, Pipe
 from operator import itemgetter
+from pathlib import Path
+
+from m3ufu import M3uFu
 from iframes import IFramer
 from new_reader import reader
 from threefive import Cue
@@ -20,9 +19,7 @@ from x9k3 import Chunk, X9K3, SCTE35, SlidingWindow,Timer,argue
 #from .version import version
 
 
-
-
-class UMZZ:
+class UMZZ2:
     def __init__(self, m3u8_list, base, sidecar):
         self.master = None
         self.m3u8_list = m3u8_list
@@ -80,7 +77,7 @@ class UMZZ:
         chk_sidecar checks the sidecar file once a second
         for new SCTE-35 Cues.
         """
-        time.sleep(1)
+        time.sleep(.5)
         self.load_sidecar()
         return True
 
@@ -131,15 +128,26 @@ class UMZZ:
                 return False
 
     def mp_run(self, pipe,manifest,dir_name):
+        args =argue()
         x9mp = X9MP()
         x9mp.sidecar_pipe = pipe
-        x9mp.args.output_dir = dir_name
-        x9mp.args.live = True
-       # try:
-        x9mp.decode_m3u8(manifest=manifest.media)
-        #except Exception as err:
-         #   print(err)
-          #  print(manifest.media, "...........Failed")
+        args.output_dir = dir_name
+        args.live = True
+        args.input =manifest.media
+        x9mp.args = args
+        x9mp.decode()
+        while args.replay:
+            segnum =x9mp.segnum
+            x9mp = X9MP()
+            x9mp.sidecar_pipe = pipe
+            x9mp.args.output_dir = dir_name
+            x9mp.args.live = True
+            args.input =manifest.media
+            x9mp.args = args
+            x9mp.args.continue_m3u8=True
+            x9mp.continue_m3u8()
+            x9mp.segnum =segnum
+            x9mp.decode()
 
 
 
@@ -152,19 +160,7 @@ class X9MP(X9K3):
     def __init__(self, tsdata=None, show_null=False):
         super().__init__(tsdata, show_null)
         self.sidecar_pipe = None
-      #  self.timer = Timer()
-       # self.m3u8 = "index.m3u8"
-       # self.args = argue()
-        #self.apply_args()
-        self.media_list = []
-
-    @staticmethod
-    def _clean_line(line):
-        if isinstance(line, bytes):
-            line = line.decode(errors="ignore")
-        line = line.replace("\n", "").replace("\r", "")
-        return line
-
+        self.timer.start()
 
     def _load_sidecar(self, pid):
         """
@@ -183,159 +179,6 @@ class X9MP(X9K3):
                         self.sidecar.append([insert_pts, cue])
                         self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
 
-##    def now(self):
-##        """
-##        now returns the current pts
-##        for the first program available.
-##        """
-##        try:
-##            return self.as_90k(list(self.maps.prgm_pts.items())[0][1])
-##        except:
-##            return None
-
-##    def _write_segment(self):
-##        print("HEY")
-##        if self.segnum is None:
-##            self.segnum = 0
-##        seg_file = f"seg{self.segnum}.ts"
-##        seg_name = self.mk_uri(self.args.output_dir, seg_file)
-##        seg_time = round(self.now() - self.started, 6)
-##        with open(seg_name, "wb") as seg:
-##            seg.write(self.active_segment.getbuffer())
-##        if seg_time <= 0:
-##            return
-##        chunk = Chunk(seg_file, seg_name, self.segnum)
-##        if self.first_segment:
-##            if self.args.replay or self.args.continue_m3u8:
-##                self.add_discontinuity(chunk)
-##        self._mk_chunk_tags(chunk, seg_time)
-##        self.window.push_pane(chunk)
-##        self._write_m3u8()
-##        self._print_segment_details(seg_name, seg_time)
-##        self._start_next_start()
-##        if self.scte35.break_timer is not None:
-##            self.scte35.break_timer += seg_time
-##        self.scte35.chk_cue_state()
-##        self._chk_live(seg_time)
-
-
-#    def addendum(self):
-#        return
-##    def run(self):
-##        """
-##        run calls replay() if replay is set
-##        or else it calls decode()
-##        """
-##        self.apply_args()
-##        if self.in_stream.endswith("m3u8"):
-##            self.decode_m3u8(manifest=self.in_stream)
-##        if self.args.replay:
-##            while True:
-##                self.loop()
-##        else:
-##            self.decode()
-##    def _parse_pts(self, pkt, pid):
-##        """
-##        parse pts and store by program key
-##        in the dict Stream._pid_pts
-##        """
-##     #   if pid not in self.pids.pcr:
-##      #      print(self.pids.pcr)
-##        if not self._pusi_flag(pkt):
-##            return
-##        payload = self._parse_payload(pkt)
-##        if len(payload) > 13:
-##            if self._pts_flag(payload):
-##                pts = (payload[9] & 14) << 29
-##                pts |= payload[10] << 22
-##                pts |= (payload[11] >> 1) << 15
-##                pts |= payload[12] << 7
-##                pts |= payload[13] >> 1
-##                prgm = self.pid2prgm(pid)
-##                self.maps.prgm_pts[prgm] = pts
-##                if prgm not in self.start:
-##                    self.start[prgm] = pts
-##               # print('PTS', pts/90000.0)
-####
-##    def _parse(self, pkt):
-##        """
-##        _parse is run on every packet.
-##        """
-##        super()._parse(pkt)
-##        pkt_pid = self._parse_pid(pkt[1], pkt[2])
-##        now = self.pid2pts(pkt_pid)
-##        self._load_sidecar(pkt_pid)
-##        self._chk_sidecar_cues(pkt_pid)
-##        if not self.started:
-##            self._start_next_start(pts=now)
-##        #    print(self.started)
-##        if self._pusi_flag(pkt) and self.started:
-##         #   print("PUSI")
-##         #   print(pkt)
-##           # print(now)
-##            if self.args.shulga:
-##                self._shulga_mode(pkt, now)
-##            else:
-##                i_pts = self.iframer.parse(pkt)
-##                if i_pts:
-##                    self._chk_slice_point(i_pts)
-##            # Split on non-Iframes for CUE-IN or CUE-OUT
-##            if self.scte35.cue_time:
-##                self._chk_slice_point(now)
-##   
-##        self.active_segment.write(pkt)
-##
-
-
-
-
-    def decode_m3u8(self, manifest=None):
-        """
-        decode_m3u8 is called when the input file is a m3u8 playlist.
-        """
-      #  if not  manifest.startswith('http') or not manifest.startswith('/'): 
-        based = manifest.rsplit("/", 1)
-        if len(based) > 1:
-            base_uri = f"{based[0]}/"
-        else:
-            base_uri = ""
-        last_segnum = -1
-        reload = 25
-        self.timer.start()
-        while True:
-            with reader(manifest) as manifesto:
-                m3u8 = manifesto.readlines()
-                print(self.args)
-                for line in m3u8:
-                    line = self._clean_line(line)
-                    if not line:
-                        break
-                    if self.segnum == last_segnum:
-                        reload -= 1
-                    else:
-                        reload = 25
-                    last_segnum = self.segnum
-                    if not line.startswith("#"):
-                        if len(line):
-                            if base_uri not in line:
-                                media = base_uri + line
-                            else:
-                                media = line
-                           # print(media)
-                            if media not in self.media_list:
-                                self.media_list.append(media)
-                              #  print(self.media_list)
-                                self.media_list = self.media_list[-200:]
-                                self._tsdata = reader(media)
-                                for pkt in self.iter_pkts():
-                                     self._parse(pkt)
-                                self._tsdata.close()
-                              #  print(self.now())
-                               # self._reset_stream()
-                               # self.decode_fu()
-                               # return
-            if not reload:
-                return False
 
 
 def cli():
@@ -360,11 +203,9 @@ def cli():
     fu.m3u8 = args.input
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
-    #try:
     fu.decode()
-    um = UMZZ(fu.segments, args.output_dir, args.sidecar_file)
+    um = UMZZ2(fu.segments, args.output_dir, args.sidecar_file)
     um.go()
-   # finally:
     return
 
 
