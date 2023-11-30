@@ -9,23 +9,24 @@ with open("umzz/version.py","r", encoding="utf-8") as latest:
     version = latest.read().split('"')[1]
 
 
+
 setuptools.setup(
     name="umzz",
     version=version,
-    author="Adrian",
-    author_email="spam@iodisco.com",
+    author="Adrian of Doom",
+    author_email="a@slow.golf",
     description="SCTE-35 Injection for Adaptive Bitrate HLS",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/futzu/umzz",
     install_requires=[
         "new_reader >= 0.1.7",
-        "iframes >= 0.0.5",
-        "x9k3 >= 0.1.89",
-        "m3ufu >=0.0.67",
-        "threefive >= 2.3.81",
+        "iframes >= 0.0.7",
+        "x9k3 >= 0.2.17",
+        "m3ufu >=0.0.81",
+        "threefive >= 2.4.9",
     ],
-    scripts=["bin/umzz"],
+    scripts=["bin/umzz","bin/umzz2"],
     packages=setuptools.find_packages(),
     classifiers=[
         "License :: OSI Approved :: MIT License",
