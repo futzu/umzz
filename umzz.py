@@ -18,7 +18,7 @@ from threefive import Cue
 from x9k3 import Chunk, X9K3, SCTE35, SlidingWindow,Timer,argue
 #from .version import version
 
-version = '0.0.11'
+version = '0.0.13'
 
 
 class UMZZ:
