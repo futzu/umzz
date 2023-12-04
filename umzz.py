@@ -1,5 +1,5 @@
 """
-umzz2.py
+umzz.py
 """
 import datetime
 import io
@@ -18,8 +18,10 @@ from threefive import Cue
 from x9k3 import Chunk, X9K3, SCTE35, SlidingWindow,Timer,argue
 #from .version import version
 
+version = '0.0.11'
 
-class UMZZ2:
+
+class UMZZ:
     def __init__(self, m3u8_list, base, sidecar):
         self.master = None
         self.m3u8_list = m3u8_list
@@ -204,7 +206,7 @@ def cli():
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
     fu.decode()
-    um = UMZZ2(fu.segments, args.output_dir, args.sidecar_file)
+    um = UMZZ(fu.segments, args.output_dir, args.sidecar_file)
     um.go()
     return
 
