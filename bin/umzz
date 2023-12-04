@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from umzz.umzz2 import cli
+from umzz import cli
 
 cli()
 
