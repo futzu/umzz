@@ -1,7 +1,7 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
-## Latest Version `v0.0.9`
+## Latest Version `v0.0.11`
 
 
  * umzz
