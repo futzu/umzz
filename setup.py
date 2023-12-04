@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
 import setuptools
+import umzz
 
 with open("README.md", "r", encoding="utf-8") as fh:
     readme = fh.read()
 
-with open("umzz/version.py","r", encoding="utf-8") as latest:
-    version = latest.read().split('"')[1]
 
 
 
 setuptools.setup(
     name="umzz",
-    version=version,
+    version=umzz.version,
     author="Adrian of Doom",
     author_email="a@slow.golf",
     description="SCTE-35 Injection for Adaptive Bitrate HLS",
