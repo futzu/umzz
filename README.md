@@ -33,28 +33,34 @@ ___
     
 </details>    
 
-   <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
+<details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
-### DO NOT USE a master.m3u8 over a network, it will have problems because you're trying to download and parse all the variants at the same time. 
+##### Don't use a master.m3u8 over a network, 
+<br>it will have problems. You're trying to download 
+<br>and parse all the renditions at the same time. 
+<br> Instead use ffmpeg to pull one rendition off the network
+<br>and use it to  create a new local master.m3u8.
+<br> This is the faster way to do it
 
-### Instead use ffmpeg to pull ONE rendition off the network and use it to  create a new local master.m3u8.
-
-### This is the faster way to do it
-
-* something like 
-```
-ffmpeg  -re -copyts  -i https://example.com/rendition4.m3u8  \
- -g 30 -r 30 -flags +cgop \
--c:v libx264 -c:a aac \
--b:v:0 1000k -b:v:1 256k -b:a:0 64k -b:a:1 32k \
--map 0:v -map 0:a -map 0:v -map 0:a \
+* something like
+  
+```smalltalk
+ffmpeg  -re -copyts    
+-i https://example.com/rendition4.m3u8  \ 
+-g 30 -r 30 -flags +cgop \         
+-c:v libx264 -preset faster \       
+-b:v:0 2500k -b:v:1 256k  \          
+-filter:v:0 scale=1920:1080 -filter:v:1 scale=512:288 \
+-c:a aac -b:a 64k \                          
+-map 0:v -map 0:a -map 0:v -map 0:a  \ 
 -f hls -var_stream_map "v:0,a:0 v:1,a:1" \
--master_pl_name master.m3u8 \
-fu3/mo_%v.m3u8
+-master_pl_name master.m3u8   \
+fu3/mo_%v.m3u8  
 ```
-* then use fu3/master.m3u8 for umzz
+
+* While ffmpeg is working, wait a few seconds and then startup umzz.
   ```lua
-  umzz -i fu3/master.m3u8 -s my_sidecar.txt
+  umzz -i fu3/master.m3u8 -s my_sidecar.txt -l
   ```
 * and you'll be good to go.
 
