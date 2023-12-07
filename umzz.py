@@ -18,7 +18,7 @@ from threefive import Cue
 from x9k3 import Chunk, X9K3, SCTE35, SlidingWindow,Timer,argue
 #from .version import version
 
-version = '0.0.13'
+version = '0.0.15'
 
 
 class UMZZ:
@@ -36,11 +36,6 @@ class UMZZ:
         add_variant creates a pipe for a variant to receive SCTE-35
         and starts a Process for a variant.
         """
-##        if m3u8.tags:
-##            if "#EXT-X-MEDIA-TYPE" in m3u8.tags:
-##                if m3u8.tags["#EXT-X-MEDIA-TYPE"] in ["CLOSED-CAPTIONS", "SUBTITLES"]:
-##                    print(f'skipping {m3u8.tags["#EXT-X-MEDIA-TYPE"]}')
-##                    return
         recvr, sendr = Pipe()
         self.pipes.append(sendr)
         v = Process(
@@ -61,25 +56,24 @@ class UMZZ:
         the sidecar file and loads them into X9K3.sidecar
         if live, blank out the sidecar file after cues are loaded.
         """
-        if self.sidecar:
+        if self.sidecar:              
             with reader(self.sidecar) as sidefile:
                 for line in sidefile:
                     line = line.decode().strip().split("#", 1)[0]
                     if len(line):
                         insert_pts, cue = line.split(",", 1)
                         for pipe in self.pipes:
-                            print(insert_pts, cue)
                             pipe.send((insert_pts, cue))
-                sidefile.close()
-                with open(self.sidecar, "w") as scf:
-                    scf.close()
+                #sidefile.close()
+              #  with open(self.sidecar, "w") as scf:
+               #     scf.close()
 
     def chk_sidecar(self):
         """
         chk_sidecar checks the sidecar file once a second
         for new SCTE-35 Cues.
         """
-        time.sleep(.5)
+        time.sleep(.3)
         self.load_sidecar()
         return True
 
@@ -87,7 +81,6 @@ class UMZZ:
         """
         is_running checks to see if variant Processes are running
         """
-        self.chk_sidecar()
         for v in self.variants:
             if v.is_alive():
                 return True
@@ -103,11 +96,7 @@ class UMZZ:
         with open(self.base + "/master.m3u8", "w") as master:
             master.write("#EXTM3U\n#EXT-X-VERSION:6\n\n")
             for m3u8 in self.m3u8_list:
-                #   print(vars(m3u8))
-                self.chk_sidecar()
                 if "#EXT-X-STREAM-INF" in m3u8.tags:
-                  #  for k, v in m3u8.tags.items():
-                    #    print(f"{k}:{v}")
                     master.write("\n".join(m3u8.lines[:-1]))
                     master.write("\n")
                     dn = self.base + "/" + str(dir_name)
@@ -126,26 +115,35 @@ class UMZZ:
                         master.write(m3u8.lines[0])
                         master.write("\n")
         while True:
-            if not self.is_running():
+            if  self.is_running():
+                self.chk_sidecar()
+            else:
                 return False
 
-    def mp_run(self, pipe,manifest,dir_name):
-        args =argue()
+    def mk_x9mp(self,args,pipe, manifest,dir_name):
+        """
+        mk_x9mp generates an X9MP instance and
+        sets default values
+        """
         x9mp = X9MP()
         x9mp.sidecar_pipe = pipe
-        args.output_dir = dir_name
-        args.live = True
-        args.input =manifest.media
         x9mp.args = args
+        x9mp.args.output_dir = dir_name
+        x9mp.args.live = False
+        x9mp.args.input =manifest.media
+        x9mp.args.sidecar_file = dir_name+'/'+self.sidecar
+        return x9mp
+
+    def mp_run(self, pipe,manifest,dir_name):
+        """
+        mp_run is the process started for each variant.
+        """
+        args =argue()
+        x9mp = self.mk_x9mp(args, pipe, manifest, dir_name)
         x9mp.decode()
         while args.replay:
             segnum =x9mp.segnum
-            x9mp = X9MP()
-            x9mp.sidecar_pipe = pipe
-            x9mp.args.output_dir = dir_name
-            x9mp.args.live = True
-            args.input =manifest.media
-            x9mp.args = args
+            x9mp = self.mk_x9mp(args, pipe, manifest, dir_name)
             x9mp.args.continue_m3u8=True
             x9mp.continue_m3u8()
             x9mp.segnum =segnum
@@ -163,6 +161,8 @@ class X9MP(X9K3):
         super().__init__(tsdata, show_null)
         self.sidecar_pipe = None
         self.timer.start()
+        print(self.args)
+
 
     def _load_sidecar(self, pid):
         """
@@ -176,11 +176,34 @@ class X9MP(X9K3):
                 insert_pts = float(insert_pts)
                 if insert_pts == 0.0 and self.args.live:
                     insert_pts = self.next_start
-                if insert_pts >= self.pid2pts(pid):
-                    if [insert_pts, cue] not in self.sidecar:
-                        self.sidecar.append([insert_pts, cue])
-                        self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
+               # if insert_pts >= self.pid2pts(pid):
+                if [insert_pts, cue] not in self.sidecar:
+                    print("Cue from Sidecar: ",insert_pts,cue)
+                    self.sidecar.append([insert_pts, cue])
+                    self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
+            self._chk_sidecar_cues(pid)
 
+
+    
+
+    def apply_args(self):
+        """
+        _apply_args  uses command line args
+        to set X9K3 instance vars, this is here
+        to short out the call to apply_args when
+        we call super().__init__ .
+        """
+        pass
+
+    def decode(self, func=False):
+        """
+        decode iterates mpegts packets
+        and passes them to _parse.
+        This is over-ridden so we can
+        call super().apply_args()
+        """
+        super().apply_args()
+        super().decode()
 
 
 def cli():
@@ -194,13 +217,10 @@ def cli():
 
     """
     args = argue()
-  #  if args.version:
-   #     print(f"umzz {version}")
-    #    sys.exit()
+    if args.version:
+        print(f"umzz {version}")
+        sys.exit()
     print(args)
-    if not args.sidecar_file:
-        args.sidecar_file='sidecar.txt'
-    Path(args.sidecar_file).touch()
     fu = M3uFu()
     fu.m3u8 = args.input
     if not os.path.isdir(args.output_dir):
