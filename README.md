@@ -3,8 +3,7 @@
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
 ## Latest Version `v0.0.17`
 
-___
- * umzz
+* umzz
      * Handles __live streams in realtime__.
      * supports __mpegts__ segments that use __h264, h265, and mpeg2__ video codecs.
      * __Does not encode__. Use any encoder you like and pass umzz the master.m3u8.
@@ -14,7 +13,6 @@ ___
 
 
 
-## How does umzz work?
 
 <details><summary><b>Install</b></summary>
     
@@ -30,6 +28,7 @@ ___
 </details>    
 
 
+## `Inputs`
 
 <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
@@ -66,7 +65,10 @@ fu3/mo_%v.m3u8
 
 </details>  
 
-    
+
+## `Command Line`    
+
+
 <details><summary><b>cli tool</b></summary>
 
 ```smalltalk
@@ -121,10 +123,16 @@ optional arguments:
 
   -v, --version         Show version
 ```
+
+
 </details>
 
 
-<details> <summary>using umzz <B>programmatically</B></summary>
+#### `Writing Code`
+<details> <summary>using umzz <B>programmatically</B>
+
+
+</summary>
 
 
 
@@ -167,7 +175,7 @@ optional arguments:
 
 </details>
 
-
+#### `SCTE-35`
 <details> <summary>SCTE-35 cues are load from a sidecar file. <b>More on sidecar files.<b> </summary>
 
 Sidecar Cues will be handled the same as SCTE35 cues from a video stream.   
