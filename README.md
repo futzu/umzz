@@ -128,7 +128,7 @@ optional arguments:
 </details>
 
 
-#### `Writing Code`
+## `Writing Code`
 <details> <summary>using umzz <B>programmatically</B>
 
 
@@ -175,7 +175,7 @@ optional arguments:
 
 </details>
 
-#### `SCTE-35`
+## `SCTE-35`
 <details> <summary>SCTE-35 cues are load from a sidecar file. <b>More on sidecar files.<b> </summary>
 
 Sidecar Cues will be handled the same as SCTE35 cues from a video stream.   
