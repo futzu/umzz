@@ -2,12 +2,7 @@
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
 ## Latest Version `v0.0.15`
-* rollover fixed
-* continue fixed
-* replay aka looping fixed
-* delete fixed
-* **EVERYTHING IS WORKING**
-     *  *if you have a problem, it's your fault* :) 
+
 ___
  * umzz
      * Handles __live streams in realtime__.
