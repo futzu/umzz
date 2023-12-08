@@ -1,7 +1,7 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
-## Latest Version `v0.0.15`
+## Latest Version `v0.0.17`
 
 ___
  * umzz
@@ -11,6 +11,7 @@ ___
      * __Adds the SCTE-35 Cues__ to each variant, and __adjusts segments__ to start on iframes.
      * Keeps variants in sync so __adaptive bitrate HLS works properly__.
      * Outputs a __new master.m3u8__, new __variant m3u8s__, and __variant segments with SCTE-35__.
+
 
 
 ## How does umzz work?
@@ -27,6 +28,8 @@ ___
 ```
     
 </details>    
+
+
 
 <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
@@ -60,48 +63,109 @@ fu3/mo_%v.m3u8
 * and you'll be good to go.
 
 
-* Supported Video 
-    * Containers:
-        * MPEGTS
-    * Codecs:
-        * h264
-        * h265
-        * mpeg2
-    * HLS:
-        * Audio and Video in the same segment. 
-    
+
 </details>  
 
     
-<details><summary><b>Details</b></summary>
+<details><summary><b>cli tool</b></summary>
 
-```js
-a@debian:~/$ umzz -h
-usage: umzz [-h] [-i INPUT] [-o OUTPUT_DIR] [-s SIDECAR_FILE] [-t TIME]
-                [-T HLS_TAG] [-w WINDOW_SIZE] [-d] [-l] [-r] [-S] [-v] [-p]
-                
+```smalltalk
+usage: umzz [-h] [-i INPUT] [-c] [-d] [-l] [-n] [-o OUTPUT_DIR] [-p] [-r]
+            [-s SIDECAR_FILE] [-S] [-t TIME] [-T HLS_TAG] [-w WINDOW_SIZE]
+            [-v]
+
 optional arguments:
   -h, --help            show this help message and exit
-  ```
-  ```js
+
   -i INPUT, --input INPUT
-                        Input source, like "/home/a/master.m3u8" or
-                        "udp://@235.35.3.5:3535" or
-                        "https://futzu.com/xaa.master.m3u8"
-   ``` 
+                        Input source, like /home/a/vid.ts or
+                        udp://@235.35.3.5:3535 or https://futzu.com/xaa.ts or
+                        https://example.com/not_a_master.m3u8 [default: stdin]
+
+  -c, --continue_m3u8   Resume writing index.m3u8 [default:False]
+
+  -d, --delete          delete segments (enables --live) [default:False]
+
+  -l, --live            Flag for a live event (enables sliding window m3u8)
+                        [default:False]
+
+  -n, --no_discontinuity
+                        Flag to disable adding #EXT-X-DISCONTINUITY tags at
+                        splice points [default:False]
+
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        Directory for segments and index.m3u8 (created if
+                        needed) [default:'.']
+
+  -p, --program_date_time
+                        Flag to add Program Date Time tags to index.m3u8 (
+                        enables --live) [default:False]
+
+  -r, --replay          Flag for replay aka looping (enables --live,--delete)
+                        [default:False]
+
+  -s SIDECAR_FILE, --sidecar_file SIDECAR_FILE
+                        Sidecar file of SCTE-35 (pts,cue) pairs.[default:None]
+
+  -S, --shulga          Flag to enable Shulga iframe detection mode
+                        [default:False]
+
+  -t TIME, --time TIME  Segment time in seconds [default:2]
+
+  -T HLS_TAG, --hls_tag HLS_TAG
+                        x_scte35, x_cue, x_daterange, or x_splicepoint
+                        [default:x_cue]
+
+  -w WINDOW_SIZE, --window_size WINDOW_SIZE
+                        sliding window size (enables --live) [default:5]
+
+  -v, --version         Show version
+```
+</details>
+
+
+<details> <summary>using umzz <B>programmatically</B></summary>
+
+
+
+```py3
+    from umzz import do, argue
+
+    args =argue()
+
+    args.input = "/home/a/slow/master.m3u8"
+    args.live = True
+    args.replay = True
+    args.sidecar_file="sidecar.txt"
+    args.output_dir = "out-stuff"
+
+    do(args)
+```
+
+* set any command line options programmatically with args.
+* the vars in args correspond to the long_names of the cli tool.
+* the vars in args can be access via dot notation
+* these are the defaults returned from argue() .
+
+|  vars in args    |  default value |
+|------------------|----------------|
+| input            |sys.stdin.buffer|
+| continue_m3u8    |   False        |
+| delete           |   False        |
+| live             |   False        |
+| no_discontinuity |   False        |
+| output_dir       |    '.'         |
+| program_date_time|   False        |
+| replay           |   False        |
+| sidecar_file     |   None         |
+| shulga           |   False        |
+| time             |     2          |
+| hls_tags         |  'x_cue'       |
+| window_size      |     5          |
    
 
-```js
-  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
-                        Directory for segments and index.m3u8 ( created if it
-                        does not exist )
-```
 
-```js
-  -s SIDECAR_FILE, --sidecar_file SIDECAR_FILE
-                        SCTE35 Sidecar file. each line contains PTS, Cue
-                        (default sidecar.txt)
-```
+</details>
 
 
 <details> <summary>SCTE-35 cues are load from a sidecar file. <b>More on sidecar files.<b> </summary>
@@ -170,36 +234,6 @@ cue can be base64,hex, int, or bytes
     
 </details>
 
-```js
-  -t TIME, --time TIME  Segment time in seconds ( default is 2)
-```
-```js
-  -T HLS_TAG, --hls_tag HLS_TAG
-                        x_scte35, x_cue, x_daterange, or x_splicepoint
-                        (default x_cue)
-```
-```js
-  -w WINDOW_SIZE, --window_size WINDOW_SIZE
-                        sliding window size(default:5)
-```
-```js                
-  -d, --delete          delete segments
-  
-  -l, --live            Flag for a fake live playback ( enables sliding window m3u8 )
-  
-  -r, --replay          Flag for replay (looping) ( enables --delete )
-  
-  -S, --shulga          Flag to enable Shulga iframe detection mode (mpeg2)
-  
-  -v, --version         Show version
-  
-  -p, --program_date_time
-                        Flag to add Program Date Time tags to index.m3u8
-
-```
-
-</details>
-    
     
 <details><summary> Quick Example </summary>
     
