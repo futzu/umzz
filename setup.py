@@ -6,12 +6,9 @@ import umzz
 with open("README.md", "r", encoding="utf-8") as fh:
     readme = fh.read()
 
-
-
-
 setuptools.setup(
     name="umzz",
-    version=umzz.version,
+    version=umzz.version(),
     author="Adrian of Doom",
     author_email="a@slow.golf",
     description=" Ultra Mega Zoom Zoom is SCTE-35 Injection for Adaptive Bitrate HLS",
