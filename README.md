@@ -1,8 +1,9 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
-## Latest Version `v0.0.17`
-
+## Latest Version `v0.0.19`
+* Updated to x9k3 v0.2.31
+---
 * umzz
      * Handles __live streams in realtime__.
      * supports __mpegts__ segments that use __h264, h265, and mpeg2__ video codecs.
