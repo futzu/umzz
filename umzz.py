@@ -14,7 +14,7 @@ from x9k3 import  X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 17
+MAINTENANCE = 19
 
 
 def version():
