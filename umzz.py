@@ -14,7 +14,7 @@ from x9k3 import  X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 19
+MAINTENANCE = 21
 
 
 def version():
@@ -162,10 +162,10 @@ class X9MP(X9K3):
     def __init__(self, tsdata=None, show_null=False):
         super().__init__(tsdata, show_null)
         self.sidecar_pipe = None
-        self.timer.start()
+       # self.timer.start() # already called by super().decode()
         self.args = None
 
-    def _load_sidecar(self, pid):
+    def _load_sidecar(self):
         """
         _load_sidecar reads (pts, cue) pairs from
         the sidecar file and loads them into x13.sidecar
@@ -181,7 +181,7 @@ class X9MP(X9K3):
                     print("Cue from Sidecar: ", insert_pts, cue)
                     self.sidecar.append([insert_pts, cue])
                     self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
-            self._chk_sidecar_cues(pid)
+           # self._chk_sidecar_cues(pid)
 
     def apply_args(self):
         """
