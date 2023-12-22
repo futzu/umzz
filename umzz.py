@@ -1,55 +1,59 @@
 """
 umzz.py
 """
+from pathlib import Path
 import os
 import sys
 import time
-from collections import deque
-from multiprocessing import Process, Pipe
-from operator import itemgetter
+import multiprocessing as mp
 from m3ufu import M3uFu
 from new_reader import reader
-from x9k3 import  X9K3, argue
-
+from x9k3 import X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 21
+MAINTENANCE = 23
 
 
 def version():
-    return  f'v{MAJOR}.{MINOR}.{MAINTENANCE}'
+    """
+    version() returns the current version of umzz.
+    """
+    return f"v{MAJOR}.{MINOR}.{MAINTENANCE}"
+
 
 class UMZZ:
+    """
+    The UMZZ class starts a X9MP process for each rendition
+    and manages them.
+    """
+
     def __init__(self, m3u8_list, args):
         self.master = None
         self.m3u8_list = m3u8_list
         self.args = args
         self.sidecar = args.sidecar_file
+        self.side_files = []
         self.last_lines = []
-        self.pipes = []
-        self.variants = []
         self.base = args.output_dir
         print("BASE", self.base)
 
-    def add_variant(self, m3u8, dir_name):
+    def add_rendition(self, m3u8, dir_name):
         """
-        add_variant creates a pipe for a variant to receive SCTE-35
-        and starts a Process for a variant.
+        add_rendition starts a process for each rendition and
+        creates a pipe for each rendition to receive SCTE-35.
         """
-        recvr, sendr = Pipe()
-        self.pipes.append(sendr)
-        v = Process(
+        p = mp.Process(
             target=self.mp_run,
             args=(
-                recvr,
                 m3u8,
                 dir_name,
             ),
         )
-        v.start()
-        print(v._name, " is up")
-        self.variants.append(v)
+        p.start()
+        print("Rendition Process Started")
+
+    #  self.renditions.append(p)
 
     def load_sidecar(self):
         """
@@ -62,40 +66,27 @@ class UMZZ:
                 these_lines = sidefile.readlines()
                 if these_lines == self.last_lines:
                     return
-                for line in these_lines:
-                    line = line.decode().strip().split("#", 1)[0]
-                    if "," in line:
-                        insert_pts, cue = line.split(",", 1)
-                        for pipe in self.pipes:
-                            pipe.send((insert_pts, cue))
+                for side_file in self.side_files:
+                    with open(side_file, "wb") as side:
+                        side.writelines(these_lines)
 
-    def chk_sidecar(self):
-        """
-        chk_sidecar checks the sidecar file once a second
-        for new SCTE-35 Cues.
-        """
-        time.sleep(0.1)
-        self.load_sidecar()
-        return True
-
-    def is_running(self):
-        """
-        is_running checks to see if variant Processes are running
-        """
-        for v in self.variants:
-            if v.is_alive():
-                return True
-            self.variants.pop(self.variants.index(v))
-            print(v._name, " is down")
-            time.sleep(0.1)
-        return False
+    ##    def is_running(self):
+    ##        """
+    ##        is_running checks to see if rendition Processes are running
+    ##        """
+    ##        for r in self.renditions:
+    ##            if r.is_alive():
+    ##                return True
+    ##            self.renditions.pop(self.renditions.index(r))
+    ##            print(r._name, " is down")
+    ##        return False
 
     def go(self):
         """
         go writes the new master.m3u8.
         """
         dir_name = 0
-        with open(self.base + "/master.m3u8", "w",encoding ="utf-8") as master:
+        with open(self.base + "/master.m3u8", "w", encoding="utf-8") as master:
             master.write("#EXTM3U\n#EXT-X-VERSION:6\n\n")
             for m3u8 in self.m3u8_list:
                 if "#EXT-X-STREAM-INF" in m3u8.tags:
@@ -105,7 +96,9 @@ class UMZZ:
                     if not os.path.isdir(dn):
                         os.mkdir(dn)
                     master.write(f"{dir_name}/index.m3u8\n")
-                    self.add_variant(m3u8, dn)
+                    if self.args.sidecar_file:
+                        self.side_files.append(dn + "/" + self.sidecar)
+                    self.add_rendition(m3u8, dn)
                     dir_name += 1
                 else:  # Copy over stuff like "#EXT-X-MEDIA-TYPE"
                     if len(m3u8.lines) > 1:
@@ -117,90 +110,40 @@ class UMZZ:
                         master.write(m3u8.lines[0])
                         master.write("\n")
         while True:
-            if self.is_running():
-                self.chk_sidecar()
-            else:
-                return False
+            #    if self.is_running():
+            if self.sidecar:
+                self.load_sidecar()
+            time.sleep(0.2)
 
-    def mk_x9mp(self, pipe, manifest, dir_name):
+    def mk_x9mp(self, manifest, dir_name):
         """
         mk_x9mp generates an X9MP instance and
         sets default values
         """
-        x9mp = X9MP()
-        x9mp.sidecar_pipe = pipe
+        x9mp = X9K3()
         x9mp.args = self.args
         x9mp.args.output_dir = dir_name
-        x9mp._tsdata = manifest.media
         x9mp.args.input = manifest.media
-        if self.sidecar:
-            self.load_sidecar()  # don't miss any cues
+        if x9mp.args.sidecar_file:
             x9mp.args.sidecar_file = dir_name + "/" + self.sidecar
+            #Path(x9mp.args.sidecar_file).touch()
+            self.clobber_file(self.args.sidecar_file)
+            x9mp.load_sidecar()  # don't miss any cues
         return x9mp
 
-    def mp_run(self, pipe, manifest, dir_name):
+    def mp_run(self, manifest, dir_name):
         """
-        mp_run is the process started for each variant.
+        mp_run is the process started for each rendition.
         """
-        x9mp = self.mk_x9mp(pipe, manifest, dir_name)
+        x9mp = self.mk_x9mp(manifest, dir_name)
         x9mp.decode()
         while self.args.replay:
             segnum = x9mp.segnum
-            x9mp = self.mk_x9mp(pipe, manifest, dir_name)
+            x9mp = self.mk_x9mp(manifest, dir_name)
             x9mp.args.continue_m3u8 = True
             x9mp.continue_m3u8()
             x9mp.segnum = segnum
             x9mp.decode()
-
-
-class X9MP(X9K3):
-    """
-    X9MP IS X9K3 modified to use multiprocessing
-    for Adaptive Bit Rate.
-    """
-
-    def __init__(self, tsdata=None, show_null=False):
-        super().__init__(tsdata, show_null)
-        self.sidecar_pipe = None
-       # self.timer.start() # already called by super().decode()
-        self.args = None
-
-    def _load_sidecar(self):
-        """
-        _load_sidecar reads (pts, cue) pairs from
-        the sidecar file and loads them into x13.sidecar
-        if live, blank out the sidecar file after cues are loaded.
-        """
-        if self.sidecar_pipe:
-            if self.sidecar_pipe.poll():
-                insert_pts, cue = self.sidecar_pipe.recv()
-                insert_pts = float(insert_pts)
-                if insert_pts == 0.0 and self.args.live:
-                    insert_pts = self.next_start
-                if [insert_pts, cue] not in self.sidecar:
-                    print("Cue from Sidecar: ", insert_pts, cue)
-                    self.sidecar.append([insert_pts, cue])
-                    self.sidecar = deque(sorted(self.sidecar, key=itemgetter(0)))
-           # self._chk_sidecar_cues(pid)
-
-    def apply_args(self):
-        """
-        _apply_args  uses command line args
-        to set X9K3 instance vars, this is here
-        to short out the call to apply_args when
-        we call super().__init__ .
-        """
-        return True
-
-    def decode(self, func=False):
-        """
-        decode iterates mpegts packets
-        and passes them to _parse.
-        This is over-ridden so we can
-        call super().apply_args()
-        """
-        super().apply_args()
-        super().decode()
 
 
 def do(args):
@@ -270,4 +213,6 @@ def cli():
 
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn")
     cli()
+    # cProfile.run("cli()")
