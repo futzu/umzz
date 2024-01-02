@@ -12,7 +12,7 @@ from x9k3 import X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 23
+MAINTENANCE = 25
 
 
 def version():
@@ -79,7 +79,7 @@ class UMZZ:
     ##                return True
     ##            self.renditions.pop(self.renditions.index(r))
     ##            print(r._name, " is down")
-    ##        return False
+    ##            return False
 
     def go(self):
         """
@@ -110,7 +110,6 @@ class UMZZ:
                         master.write(m3u8.lines[0])
                         master.write("\n")
         while True:
-            #    if self.is_running():
             if self.sidecar:
                 self.load_sidecar()
             time.sleep(0.2)
@@ -126,9 +125,8 @@ class UMZZ:
         x9mp.args.input = manifest.media
         if x9mp.args.sidecar_file:
             x9mp.args.sidecar_file = dir_name + "/" + self.sidecar
-            #Path(x9mp.args.sidecar_file).touch()
-            self.clobber_file(self.args.sidecar_file)
-            x9mp.load_sidecar()  # don't miss any cues
+            Path(x9mp.args.sidecar_file).touch()
+            # x9mp.load_sidecar()
         return x9mp
 
     def mp_run(self, manifest, dir_name):
