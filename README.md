@@ -1,7 +1,9 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
-## Latest Version `v0.0.23`
+## Latest Version `v0.0.25`
+![image](https://github.com/futzu/umzz/assets/52701496/34a7345b-c7dd-4a50-8260-ba8d86c45a03)
+
 ---
 * umzz
      * Handles __live streams in realtime__.
