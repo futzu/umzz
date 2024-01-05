@@ -35,7 +35,17 @@
 
 <details> <summary> umzz takes a master.m3u8 as input,<B> More on inputs.</B> </summary>
 
+
+
 ##### Don't use a master.m3u8 over a network, 
+
+* Here's as close I can keep 4 renditions in sync over currently. 
+*  If the master.m3u8 is local, the renditions stay in sync
+
+![image](https://github.com/futzu/umzz/assets/52701496/467571ea-6d36-49e9-8978-6d4e97f2d5eb)
+
+
+<br> If you use a master,m3u8 across a network,
 <br>it will have problems. You're trying to download 
 <br>and parse all the renditions at the same time. 
 <br> Instead use ffmpeg to pull one rendition off the network
