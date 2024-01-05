@@ -12,7 +12,7 @@ from x9k3 import X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 25
+MAINTENANCE = 27
 
 
 def version():
@@ -28,32 +28,35 @@ class UMZZ:
     and manages them.
     """
 
-    def __init__(self, m3u8_list, args):
+    def __init__(self, m3u8_list):
         self.master = None
         self.m3u8_list = m3u8_list
-        self.args = args
-        self.sidecar = args.sidecar_file
+        self.args = argue()
+        self.sidecar = self.args.sidecar_file
         self.side_files = []
-        self.last_lines = []
-        self.base = args.output_dir
+        self.last_stat = 0
+        self.base = self.args.output_dir
         print("BASE", self.base)
 
-    def add_rendition(self, m3u8, dir_name):
+    def add_rendition(self, m3u8, dir_name, rendition_sidecar=None):
         """
         add_rendition starts a process for each rendition and
         creates a pipe for each rendition to receive SCTE-35.
         """
         p = mp.Process(
             target=self.mp_run,
-            args=(
-                m3u8,
-                dir_name,
-            ),
+            args=(m3u8, dir_name, rendition_sidecar),
         )
         p.start()
         print("Rendition Process Started")
 
-    #  self.renditions.append(p)
+    @staticmethod
+    def clobber_file(the_file):
+        """
+        clobber_file  blanks the_file
+        """
+        with open(the_file, "w", encoding="utf8") as clobbered:
+            clobbered.close()
 
     def load_sidecar(self):
         """
@@ -61,25 +64,28 @@ class UMZZ:
         the sidecar file and loads them into X9K3.sidecar
         if live, blank out the sidecar file after cues are loaded.
         """
-        if self.sidecar:
-            with reader(self.sidecar) as sidefile:
-                these_lines = sidefile.readlines()
-                if these_lines == self.last_lines:
-                    return
-                for side_file in self.side_files:
-                    with open(side_file, "wb") as side:
-                        side.writelines(these_lines)
+        with reader(self.sidecar) as sidefile:
+            these_lines = sidefile.readlines()
+            for side_file in self.side_files:
+                with open(side_file, "wb") as side:
+                    side.writelines(these_lines)
+        self.clobber_file(self.sidecar)
 
-    ##    def is_running(self):
-    ##        """
-    ##        is_running checks to see if rendition Processes are running
-    ##        """
-    ##        for r in self.renditions:
-    ##            if r.is_alive():
-    ##                return True
-    ##            self.renditions.pop(self.renditions.index(r))
-    ##            print(r._name, " is down")
-    ##            return False
+    def _mk_rendition_sidecar(self, dir_name):
+        rendition_sidecar = None
+        if self.args.sidecar_file:
+            _, tail = os.path.split(self.sidecar)
+            rendition_sidecar = dir_name + "/" + tail
+            Path(rendition_sidecar).touch()
+            self.side_files.append(rendition_sidecar)
+        return rendition_sidecar
+
+    def _chk_master_sidecar(self):
+        if self.sidecar:
+            side_stat = os.stat(self.sidecar).st_mtime
+            if side_stat != self.last_stat:
+                self.load_sidecar()
+                self.last_stat = side_stat
 
     def go(self):
         """
@@ -96,9 +102,8 @@ class UMZZ:
                     if not os.path.isdir(dn):
                         os.mkdir(dn)
                     master.write(f"{dir_name}/index.m3u8\n")
-                    if self.args.sidecar_file:
-                        self.side_files.append(dn + "/" + self.sidecar)
-                    self.add_rendition(m3u8, dn)
+                    rendition_sidecar = self._mk_rendition_sidecar(dn)
+                    self.add_rendition(m3u8, dn, rendition_sidecar)
                     dir_name += 1
                 else:  # Copy over stuff like "#EXT-X-MEDIA-TYPE"
                     if len(m3u8.lines) > 1:
@@ -110,11 +115,10 @@ class UMZZ:
                         master.write(m3u8.lines[0])
                         master.write("\n")
         while True:
-            if self.sidecar:
-                self.load_sidecar()
-            time.sleep(0.2)
+            self._chk_master_sidecar()
+            time.sleep(0.5)
 
-    def mk_x9mp(self, manifest, dir_name):
+    def mk_x9mp(self, manifest, dir_name, rendition_sidecar):
         """
         mk_x9mp generates an X9MP instance and
         sets default values
@@ -123,21 +127,18 @@ class UMZZ:
         x9mp.args = self.args
         x9mp.args.output_dir = dir_name
         x9mp.args.input = manifest.media
-        if x9mp.args.sidecar_file:
-            x9mp.args.sidecar_file = dir_name + "/" + self.sidecar
-            Path(x9mp.args.sidecar_file).touch()
-            # x9mp.load_sidecar()
+        x9mp.args.sidecar_file = rendition_sidecar
         return x9mp
 
-    def mp_run(self, manifest, dir_name):
+    def mp_run(self, manifest, dir_name, rendition_sidecar):
         """
         mp_run is the process started for each rendition.
         """
-        x9mp = self.mk_x9mp(manifest, dir_name)
+        x9mp = self.mk_x9mp(manifest, dir_name, rendition_sidecar)
         x9mp.decode()
         while self.args.replay:
             segnum = x9mp.segnum
-            x9mp = self.mk_x9mp(manifest, dir_name)
+            x9mp = self.mk_x9mp(manifest, dir_name,rendition_sidecar)
             x9mp.args.continue_m3u8 = True
             x9mp.continue_m3u8()
             x9mp.segnum = segnum
@@ -188,7 +189,7 @@ def do(args):
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
     fu.decode()
-    um = UMZZ(fu.segments, args)
+    um = UMZZ(fu.segments)
     um.go()
 
 
@@ -206,7 +207,7 @@ def cli():
     if args.version:
         print(version())
         sys.exit()
-    print(args)
+    _ = {print(k, "=", v) for k, v in vars(args).items()}
     do(args)
 
 
