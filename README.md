@@ -15,7 +15,8 @@
 
 
 
-
+### umzz parsing 4 live renditions (over a network) and ffplay playing all four umzz streams
+![image](https://github.com/futzu/umzz/assets/52701496/4ff73b69-5b87-4ff4-a6c0-9d5ad398a897)
 <details><summary><b>Install</b></summary>
     
 ```lua
