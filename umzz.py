@@ -12,7 +12,7 @@ from x9k3 import X9K3, argue
 
 MAJOR = 0
 MINOR = 0
-MAINTENANCE = 27
+MAINTENANCE = 29
 
 
 def version():
@@ -35,8 +35,7 @@ class UMZZ:
         self.sidecar = self.args.sidecar_file
         self.side_files = []
         self.last_stat = 0
-        self.base = self.args.output_dir
-        print("BASE", self.base)
+        self.procs =[]
 
     def add_rendition(self, m3u8, dir_name, rendition_sidecar=None):
         """
@@ -44,19 +43,12 @@ class UMZZ:
         creates a pipe for each rendition to receive SCTE-35.
         """
         p = mp.Process(
-            target=self.mp_run,
+            target=mp_run,
             args=(m3u8, dir_name, rendition_sidecar),
         )
         p.start()
-        print("Rendition Process Started")
-
-    @staticmethod
-    def clobber_file(the_file):
-        """
-        clobber_file  blanks the_file
-        """
-        with open(the_file, "w", encoding="utf8") as clobbered:
-            clobbered.close()
+        print(f"Rendition Process Started {dir_name}")
+        self.procs.append(p)
 
     def load_sidecar(self):
         """
@@ -67,9 +59,9 @@ class UMZZ:
         with reader(self.sidecar) as sidefile:
             these_lines = sidefile.readlines()
             for side_file in self.side_files:
+                print( f"Updating {side_file}")
                 with open(side_file, "wb") as side:
                     side.writelines(these_lines)
-        self.clobber_file(self.sidecar)
 
     def _mk_rendition_sidecar(self, dir_name):
         rendition_sidecar = None
@@ -92,13 +84,13 @@ class UMZZ:
         go writes the new master.m3u8.
         """
         dir_name = 0
-        with open(self.base + "/master.m3u8", "w", encoding="utf-8") as master:
+        with open(self.args.output_dir + "/master.m3u8", "w", encoding="utf-8") as master:
             master.write("#EXTM3U\n#EXT-X-VERSION:6\n\n")
             for m3u8 in self.m3u8_list:
                 if "#EXT-X-STREAM-INF" in m3u8.tags:
                     master.write("\n".join(m3u8.lines[:-1]))
                     master.write("\n")
-                    dn = self.base + "/" + str(dir_name)
+                    dn = self.args.output_dir + "/" + str(dir_name)
                     if not os.path.isdir(dn):
                         os.mkdir(dn)
                     master.write(f"{dir_name}/index.m3u8\n")
@@ -114,36 +106,37 @@ class UMZZ:
                     else:
                         master.write(m3u8.lines[0])
                         master.write("\n")
-        while True:
+        while True in [p.is_alive() for p in self.procs ]:
             self._chk_master_sidecar()
-            time.sleep(0.5)
+            time.sleep(0.2)
+        sys.exit()
 
-    def mk_x9mp(self, manifest, dir_name, rendition_sidecar):
-        """
-        mk_x9mp generates an X9MP instance and
-        sets default values
-        """
-        x9mp = X9K3()
-        x9mp.args = self.args
-        x9mp.args.output_dir = dir_name
-        x9mp.args.input = manifest.media
-        x9mp.args.sidecar_file = rendition_sidecar
-        return x9mp
+def mk_x9mp(manifest, dir_name, rendition_sidecar):
+    """
+    mk_x9mp generates an X9MP instance and
+    sets default values
+    """
+    x9mp = X9K3()
+    x9mp.args = argue()
+    x9mp.args.output_dir = dir_name
+    x9mp.args.input = manifest.media
+    x9mp.args.sidecar_file = rendition_sidecar
+    return x9mp
 
-    def mp_run(self, manifest, dir_name, rendition_sidecar):
-        """
-        mp_run is the process started for each rendition.
-        """
-        x9mp = self.mk_x9mp(manifest, dir_name, rendition_sidecar)
+
+def mp_run(manifest, dir_name, rendition_sidecar=None):
+    """
+    mp_run is the process started for each rendition.
+    """
+    args = argue()
+    x9mp = mk_x9mp(manifest, dir_name, rendition_sidecar)
+    x9mp.decode()
+    while args.replay:
+        x9mp = mk_x9mp(manifest, dir_name,rendition_sidecar)
+        x9mp.args.continue_m3u8 = True
+        x9mp.continue_m3u8()
         x9mp.decode()
-        while self.args.replay:
-            segnum = x9mp.segnum
-            x9mp = self.mk_x9mp(manifest, dir_name,rendition_sidecar)
-            x9mp.args.continue_m3u8 = True
-            x9mp.continue_m3u8()
-            x9mp.segnum = segnum
-            x9mp.decode()
-
+    return False
 
 def do(args):
     """
