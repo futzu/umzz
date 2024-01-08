@@ -10,6 +10,7 @@ from m3ufu import M3uFu
 from new_reader import reader
 from x9k3 import X9K3, argue
 
+
 MAJOR = 0
 MINOR = 0
 MAINTENANCE = 29
@@ -111,6 +112,7 @@ class UMZZ:
             time.sleep(0.2)
         sys.exit()
 
+
 def mk_x9mp(manifest, dir_name, rendition_sidecar):
     """
     mk_x9mp generates an X9MP instance and
@@ -137,6 +139,7 @@ def mp_run(manifest, dir_name, rendition_sidecar=None):
         x9mp.continue_m3u8()
         x9mp.decode()
     return False
+
 
 def do(args):
     """
