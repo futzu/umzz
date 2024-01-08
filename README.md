@@ -1,8 +1,8 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection 
-## Latest Version `v0.0.27`
-![image](https://github.com/futzu/umzz/assets/52701496/52bd2dd6-7b30-4b34-a262-c92fca1d4051)
+## Latest Version `v0.0.31`
+![image](https://github.com/futzu/umzz/assets/52701496/428e189a-a2c3-4365-99b2-dbcc22014aad)
 
 ---
 * umzz
@@ -258,3 +258,19 @@ drwxr-xr-x 1 a a 1816 Apr  9 06:07 fu/2
 ```
     
 </details>    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+![image](https://github.com/futzu/umzz/assets/52701496/dea15a7c-d2ae-4a8d-9a5e-b27cf72ccd07)
