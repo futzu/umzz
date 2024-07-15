@@ -21,7 +21,7 @@ def version():
     """
     version() returns the current version of umzz.
     """
-    return f"v{MAJOR}.{MINOR}.{MAINTENANCE}-EXP"
+    return f"v{MAJOR}.{MINOR}.{MAINTENANCE}"
 
 
 class UMZZ:
