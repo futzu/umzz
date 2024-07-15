@@ -1,7 +1,7 @@
 # Ultra Mega zoom zoom
 
 ### Live Adaptive Bitrate HLS SCTE35 Cue Injection, powered by [threefive](https://github.com/futzu/threefive). 
-## Latest Version `v0.0.31`
+## Latest Version `v0.0.33`
 ![image](https://github.com/futzu/umzz/assets/52701496/428e189a-a2c3-4365-99b2-dbcc22014aad)
 
 ---
